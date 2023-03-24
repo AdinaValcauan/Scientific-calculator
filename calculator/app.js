@@ -1,24 +1,25 @@
-const input_element = document.querySelector(".input");
-const output_operation_element = document.querySelector(".operation .value");
-const output_result_element = document.querySelector(".result .value");
+const input_element = document.querySelector(".input"); // gets the input element from the HTML using the querySelector() method
+const output_operation_element = document.querySelector(".operation .value"); // gets the element with class "operation" and child element with class "value" from the HTML
+const output_result_element = document.querySelector(".result .value"); // gets the element with class "result" and child element with class "value" from the HTML
+
 
 const OPERATOR = ["+", "-", "*", "/"];
-const POWER_SEARCH_RESULT = "POWER(", 
+const POWER = "POWER(", 
       FACTORIAL = "FACTORIAL(", 
       square_root = "SQRT(";
 
 
 let data = {
-  operation: [],
-  formula: []
+  operation: [], // store the user's inputs while they built the equation
+  formula: [] // store the formula that will be evaluated
 }
 
-// the calculator buttons
+// array of objects that represents the calculator buttons
 let calculator_buttons = [
   {
     name: "sin",
     symbol: "sin",
-    formula: "trig(sin,",
+    formula: "trig(sin,", // formula to be executed when the button is pressed
     type: "trig_function"
   },
   {
@@ -199,18 +200,18 @@ let calculator_buttons = [
 
 // create calculator buttons
 function createButtons() {
-  const buttons_per_row = 6;
+  const buttons_per_row = 6; // no of buttons per row
   let added_buttons = 0;
 
   calculator_buttons.forEach(button => {
     if (added_buttons % buttons_per_row == 0) {
-        input_element.innerHTML += `<div class="row"></div>`; //$ to call
+        input_element.innerHTML += `<div class="row"></div>`; 
     }
 
     const row = document.querySelector(".row:last-child");
-    row.innerHTML += `<button id="${button.name}">
+    row.innerHTML += `<button id="${button.name}"> 
                         ${button.symbol}
-                      </button>`;
+                      </button>`; //$ to call the variable
     added_buttons++;
 }); 
 }
@@ -219,8 +220,8 @@ createButtons();
 
 // create click event listene r
 input_element.addEventListener("click", event => {
-  const target_btn = event.target;
-  calculator_buttons.forEach( button => {
+  const target_btn = event.target; // identify the target button that was clicked
+  calculator_buttons.forEach( button => { // loop through each button in the calculator buttons array
     if (button.name == target_btn.id) calculator(button);
   })
 })
@@ -229,8 +230,8 @@ input_element.addEventListener("click", event => {
 function calculator(button) {
   
   if (button.type == "operator") {
-    data.operation.push(button.symbol);
-    data.formula.push(button.formula);
+    data.operation.push(button.symbol); // add the operator symbol to the array
+    data.formula.push(button.formula); // add the operator formula to the array
 
   } else if (button.type == "number") {
 
@@ -242,12 +243,12 @@ function calculator(button) {
 
   } else if (button.type == "key") {
     if (button.name == "clear") {
-      data.operation = [];
-      data.formula = [];
-      updateOutputResult(0);
+      data.operation = []; // reset the operation array
+      data.formula = []; // reset the formula array
+      updateOutputResult(0); // update the output to 0
     } else if (button.name == "delete") {
-      data.operation.pop();
-      data.formula.pop();
+      data.operation.pop(); // remove the last element from operation array
+      data.formula.pop(); // remove the last element from formula array
     } else if (button.name == "close_parentheses") {
       data.operation.push(button.symbol);
       data.formula.push(button.formula);
@@ -361,10 +362,10 @@ function search(array, keyword) {
   array.forEach((element, index) => {
     if (element == keyword) 
     {
-      search_result.push(index);
+      search_result.push(index); // add the index of the element to the array
     }
   })
-  return search_result;
+  return search_result; // returns the indices of all elements that match the keyword
 } 
 
 function powerBaseGetter(formula, POWER_SEARCH_RESULT) {
