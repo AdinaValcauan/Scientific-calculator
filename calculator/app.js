@@ -5,9 +5,7 @@ const output_result_element = document.querySelector(".result .value"); // gets 
 
 const OPERATOR = ["+", "-", "*", "/"];
 const POWER = "POWER(", 
-      FACTORIAL = "FACTORIAL(", 
-      square_root = "SQRT(";
-
+      FACTORIAL = "FACTORIAL(";
 
 let data = {
   operation: [], // store the user's inputs while they built the equation
@@ -19,7 +17,7 @@ let calculator_buttons = [
   {
     name: "sin",
     symbol: "sin",
-    formula: "trig(sin,", // formula to be executed when the button is pressed
+    formula: "sin", // formula to be executed when the button is pressed
     type: "trig_function"
   },
   {
@@ -48,20 +46,20 @@ let calculator_buttons = [
   },
   {
     name: "division",
-    symbol: "/",
+    symbol: "÷",
     formula: "/",
     type: "operator"
   },
   {
     name: "cos",
     symbol: "cos",
-    formula: "trig(cos,",
+    formula: "cos",
     type: "trig_function"
   },
   {
     name: "factorial",
     symbol: "x!",
-    formula: "factorial",
+    formula: "factorial(",
     type: "math_function"
   },
   {
@@ -84,20 +82,20 @@ let calculator_buttons = [
   },
   {
     name: "multiplication",
-    symbol: "*",
+    symbol: "x",
     formula: "*",
     type: "operator"
   },
   {
     name: "tan",
     symbol: "tan",
-    formula: "trig(tan,",
+    formula: "tan",
     type: "trig_function"
   },
   {
     name: "power",
     symbol: "x<span>y</span>",
-    formula: "**",
+    formula: "**(",
     type: "math_function"
   },
   {
@@ -127,13 +125,13 @@ let calculator_buttons = [
   {
     name: "log",
     symbol: "log",
-    formula: "log(",
+    formula: "log",
     type: "math_function"
   },
   {
     name: "ln",
     symbol: "ln",
-    formula: "ln(",
+    formula: "ln",
     type: "math_function"
   },
   {
@@ -162,13 +160,13 @@ let calculator_buttons = [
   },
   {
     name: "square root",
-    symbol: "Math.sqrt",
+    symbol: "√",
     formula: "Math.sqrt",
     type: "math_function"
   },
   {
     name: "pi",
-    symbol: "Math.PI",
+    symbol: "π",
     formula: "Math.PI",
     type: "number"
   },
@@ -235,9 +233,7 @@ function calculator(button) {
 
   } else if (button.type == "number") {
 
-    if (button.name == "pi") {
-      button.innerHTML = calculator_buttons.find((btn) => btn.name === "pi").symbol;
-    }
+    
     data.operation.push(button.symbol);
     data.formula.push(button.formula);
 
@@ -258,7 +254,10 @@ function calculator(button) {
     }
 
   } else if (button.type == "calculate") {
-    formula_str = data.operation.join('');
+    formula_str = data.formula.join('');
+
+    console.log(data.operation);
+    console.log(data.formula);
 
     // fix power and factorial base problems
     let POWER_SEARCH_RESULT = search(data.formula, power);
@@ -302,7 +301,7 @@ function calculator(button) {
 
   } else if (button.type == "trig_function") {
     data.operation.push(button.symbol + "(");
-    data.formula.push(button.formula);
+    data.formula.push(button.formula + "(");
 
   } else if (button.type == "math_function") {
       let symbol, formula;
@@ -313,7 +312,7 @@ function calculator(button) {
         data.operation.push(symbol);
         data.formula.push(formula);
       } else if (button.name == "power") {
-        symbol = "**(";
+        symbol = "^(";
         formula = button.formula;
 
         data.operation.push(symbol);
@@ -461,16 +460,11 @@ function factorialNumberGetter(formula, FACTORIAL_SEARCH_RESULT) {
       replaceWith: replaceWith
     })
 
-    // reset factorial_sequence
-    factorial_sequence = 0;
+    console.log(numbers);
+    factorial_sequence = 0; // reset factorial_sequence
   })
 
   return numbers;
-}
-
-
-function trig(callback, angle) {
-  return callback(angle);
 }
 
 function sin(angle) {
