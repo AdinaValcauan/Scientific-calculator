@@ -1,4 +1,4 @@
-# Calculator
+# Scientific Calculator
 This is a web-based calculator app that allows users to perform basic arithmetic operations, as well as some common trigonometric functions. 
 The app is built using HTML, CSS, and JavaScript.
 
