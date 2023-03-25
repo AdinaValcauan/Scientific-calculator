@@ -6,16 +6,17 @@ const outputResultValue = document.querySelector(".result .value"); // gets the 
 const OPERATORS = ["+", "-", "*", "/"];
 const FACTORIAL = "factorial(";
 
+// define data objects
 let data = {
   operation: [], // store the user's inputs while they built the equation
-  formula: [] // store the formula that will be evaluated
+  expression: [] // store the expression that will be evaluated
 }
 
 // array of objects that represents the calculator buttons
 let calculatorButtons = [
   {
     name: "sin",
-    symbol: "sin",
+    symbol: "sin", // symbol that will be displayed on the button
     formula: "Math.sin", // formula to be executed when the button is pressed
     type: "trig_function"
   },
@@ -201,8 +202,8 @@ function createButtons() {
   let addedButtons = 0;
 
   calculatorButtons.forEach(button => {
-    if (addedButtons % buttonsPerRow == 0) {
-        inputElement.innerHTML += `<div class="row"></div>`; 
+    if (addedButtons % buttonsPerRow == 0) { 
+        inputElement.innerHTML += `<div class="row"></div>`; // create a new row
     }
 
     const row = document.querySelector(".row:last-child");
@@ -231,47 +232,78 @@ function calculator(button) {
   
   if (button.type == "operator") {
     data.operation.push(button.symbol); // add the operator symbol to the array
-    data.formula.push(button.formula); // add the operator formula to the array
+    data.expression.push(button.formula); // add the operator formula to the array
 
   } else if (button.type == "number") {
     data.operation.push(button.symbol);
-    data.formula.push(button.formula);
+    data.expression.push(button.formula);
 
   } else if (button.type == "key") {
     if (button.name == "clear") {
       data.operation = []; // reset the operation array
-      data.formula = []; // reset the formula array
+      data.expression = []; // reset the formula array
       updateOutputResult(0); // update the output to 0
     } else if (button.name == "delete") {
       data.operation.pop(); // remove the last element from operation array
-      data.formula.pop(); // remove the last element from formula array
+      data.expression.pop(); // remove the last element from formula array
     } else if (button.name == "close_parenthesis") {
       data.operation.push(button.symbol);
-      data.formula.push(button.formula);
+      data.expression.push(button.formula);
     } else if (button.name == "open_parenthesis") {
       data.operation.push(button.symbol);
-      data.formula.push(button.formula);
+      data.expression.push(button.formula);
     }
 
+  } else if (button.type == "trig_function") {
+    data.operation.push(button.symbol + "(");
+    data.expression.push(button.formula + "(");
+
+  } else if (button.type == "math_function") {
+      let symbol, formula;
+
+      if (button.name == "factorial") {
+        symbol = "!";
+        formula = button.formula;
+        data.operation.push(symbol);
+        data.expression.push(formula);
+      } else if (button.name == "power") {
+        symbol = "^(";
+        formula = button.formula;
+
+        data.operation.push(symbol);
+        data.expression.push(formula);
+      } else if (button.name == "square root") {
+        symbol = "√(";
+        formula = button.formula + "(";
+        data.operation.push(symbol);
+        data.expression.push(formula);
+      } else {
+        symbol = button.symbol + "(";
+        formula = button.formula + "(";
+        data.operation.push(symbol);
+        data.expression.push(formula);
+      }
+
   } else if (button.type == "calculate") {
-    formulaStr = data.formula.join('');
+    formulaString = data.expression.join(''); // concatenate all the elements in the data.formula array into a string
 
     console.log(data.operation);
-    console.log(data.formula);
+    console.log(data.expression);
 
     // fix factorial problems
-    let factorialSearch = search(data.formula, FACTORIAL);
+    let factorialSearch = search(data.expression, FACTORIAL);
     //console.log(data.formula, FACTORIAL_SEARCH_RESULT)
 
-    const NUMBERS = factorialNumberGetter(data.formula, factorialSearch);
+    
+    const NUMBERS = factorialNumberGetter(data.expression, factorialSearch);
     NUMBERS.forEach(factorial => {
-      formulaStr = formulaStr.replace(factorial.toReplace, factorial.replaceWith);
+      formulaString = formulaString.replace(factorial.toReplace, factorial.replaceWith);
     });
     
-    console.log(formulaStr);
+    console.log(formulaString);
 
     try{
-      result = eval(formulaStr);
+      result = eval(formulaString);
     } catch (error) {
       if (error instanceof SyntaxError) {
         result = "Syntax Error!";
@@ -282,41 +314,12 @@ function calculator(button) {
 
     console.log(result);
     data.operation = [ result ];
-    data.formula = [ result ];
+    data.expression = [ result ];
 
     updateOutputResult(result);
 
-  } else if (button.type == "trig_function") {
-    data.operation.push(button.symbol + "(");
-    data.formula.push(button.formula + "(");
-
-  } else if (button.type == "math_function") {
-      let symbol, formula;
-
-      if (button.name == "factorial") {
-        symbol = "!";
-        formula = button.formula;
-        data.operation.push(symbol);
-        data.formula.push(formula);
-      } else if (button.name == "power") {
-        symbol = "^(";
-        formula = button.formula;
-
-        data.operation.push(symbol);
-        data.formula.push(formula);
-      } else if (button.name == "square root") {
-        symbol = "√(";
-        formula = button.formula + "(";
-        data.operation.push(symbol);
-        data.formula.push(formula);
-      } else {
-        symbol = button.symbol + "(";
-        formula = button.formula + "(";
-        data.operation.push(symbol);
-        data.formula.push(formula);
-      }
-
   }
+  
   updateOutputResult(data.operation.join(""));
 }
 
@@ -357,38 +360,38 @@ function search(array, keyword) {
   return searchResult; // returns the indices of all elements that match the keyword
 } 
 
-
-function factorialNumberGetter(formula, factorialSearch) {
+function factorialNumberGetter(expression, factorialSearch) {
   let numbers = []; // save all the numbers 
 
   factorialSearch.forEach(factIndex => {
     let number = []; // current factorial number
     let sequence = 0;
 
-    let nextIndex = factIndex + 1;
-    let nextInput = formula[nextIndex];
+    let nextIndex = factIndex + 1; // index of the element that is next to the current factorial symbol
+    let nextInput = expression[nextIndex]; // the element that is next to the current factorial symbol
 
-    if (nextInput == FACTORIAL) {
-      sequence++;
-      return
+    if (nextInput == FACTORIAL) { // check If the next element after the factorial symbol is another factorial symbol,
+      sequence++; // increment the sequence counter 
+      return // return to the beginning of the loop
     }
 
-    let firstFactorialIndex = factIndex - sequence;
+    let firstFactorialIndex = factIndex - sequence; // index of the first factorial symbol
 
     let previousIndex = firstFactorialIndex - 1; // index of the previous number
     let parenthesisCount = 0;
 
     while(previousIndex >= 0) {
-      if (formula[previousIndex] == "(") {
+      if (expression[previousIndex] == "(") {
         parenthesisCount--;
       }
-      if (formula[previousIndex] == ")") {
+      if (expression[previousIndex] == ")") {
         parenthesisCount++;
       }
   
       let isOperator = false;
+      // checks if the current element is an operator
       OPERATORS.forEach(OPERATOR => {
-        if (formula[previousIndex] == OPERATOR) {
+        if (expression[previousIndex] == OPERATOR) {
           isOperator = true;
         }
       })
@@ -398,17 +401,18 @@ function factorialNumberGetter(formula, factorialSearch) {
         break;
       }
   
-      number.unshift(formula[previousIndex]);
+      number.unshift(expression[previousIndex]); 
+      // unshift() -> modifies the array by adding the elements passed as parameters to the beginning of the array
       previousIndex--;
     }
 
-    let numberStr = number.join('');
+    let numberString = number.join('');
     const factorial = "factorial(", closeParenthesis = ")";
     let times = sequence + 1;
 
-    let toReplace = numberStr + FACTORIAL.repeat(times);
-    let replaceWith = factorial.repeat(times) + numberStr + closeParenthesis.repeat(times);
-
+    let toReplace = numberString + factorial.repeat(times);
+    let replaceWith = factorial.repeat(times) + numberString + closeParenthesis.repeat(times);
+    
     numbers.push({
       toReplace: toReplace,
       replaceWith: replaceWith
