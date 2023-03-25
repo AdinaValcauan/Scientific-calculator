@@ -1,11 +1,10 @@
-const input_element = document.querySelector(".input"); // gets the input element from the HTML using the querySelector() method
-const output_operation_element = document.querySelector(".operation .value"); // gets the element with class "operation" and child element with class "value" from the HTML
-const output_result_element = document.querySelector(".result .value"); // gets the element with class "result" and child element with class "value" from the HTML
+const inputElement = document.querySelector(".input"); // gets the input element from the HTML using the querySelector() method
+const outputOperationValue = document.querySelector(".operation .value"); // gets the element with class "operation" and child element with class "value" from the HTML
+const outputResultValue = document.querySelector(".result .value"); // gets the element with class "result" and child element with class "value" from the HTML
 
 
-const OPERATOR = ["+", "-", "*", "/"];
-const POWER = "POWER(", 
-      FACTORIAL = "FACTORIAL(";
+const OPERATORS = ["+", "-", "*", "/"];
+const FACTORIAL = "factorial(";
 
 let data = {
   operation: [], // store the user's inputs while they built the equation
@@ -13,21 +12,21 @@ let data = {
 }
 
 // array of objects that represents the calculator buttons
-let calculator_buttons = [
+let calculatorButtons = [
   {
     name: "sin",
     symbol: "sin",
-    formula: "sin", // formula to be executed when the button is pressed
+    formula: "Math.sin", // formula to be executed when the button is pressed
     type: "trig_function"
   },
   {
-    name: "open_parentheses",
+    name: "open_parenthesis",
     symbol: "(",
     formula: "(",
     type: "key"
   },
   {
-    name: "close_parentheses",
+    name: "close_parenthesis",
     symbol: ")",
     formula: ")",
     type: "key"
@@ -53,7 +52,7 @@ let calculator_buttons = [
   {
     name: "cos",
     symbol: "cos",
-    formula: "cos",
+    formula: "Math.cos",
     type: "trig_function"
   },
   {
@@ -89,7 +88,7 @@ let calculator_buttons = [
   {
     name: "tan",
     symbol: "tan",
-    formula: "tan",
+    formula: "Math.tan",
     type: "trig_function"
   },
   {
@@ -198,29 +197,32 @@ let calculator_buttons = [
 
 // create calculator buttons
 function createButtons() {
-  const buttons_per_row = 6; // no of buttons per row
-  let added_buttons = 0;
+  const buttonsPerRow = 6; // no of buttons per row
+  let addedButtons = 0;
 
-  calculator_buttons.forEach(button => {
-    if (added_buttons % buttons_per_row == 0) {
-        input_element.innerHTML += `<div class="row"></div>`; 
+  calculatorButtons.forEach(button => {
+    if (addedButtons % buttonsPerRow == 0) {
+        inputElement.innerHTML += `<div class="row"></div>`; 
     }
 
     const row = document.querySelector(".row:last-child");
     row.innerHTML += `<button id="${button.name}"> 
                         ${button.symbol}
                       </button>`; //$ to call the variable
-    added_buttons++;
+    addedButtons++;
 }); 
 }
 
 createButtons();
 
-// create click event listene r
-input_element.addEventListener("click", event => {
-  const target_btn = event.target; // identify the target button that was clicked
-  calculator_buttons.forEach( button => { // loop through each button in the calculator buttons array
-    if (button.name == target_btn.id) calculator(button);
+// create click event listener
+inputElement.addEventListener("click", event => {
+  const targetButton = event.target; // identify the target button that was clicked
+
+  calculatorButtons.forEach( button => { // loop through each button in the calculator buttons array
+    if (button.name == targetButton.id) {
+      calculator(button);
+    }
   })
 })
 
@@ -232,8 +234,6 @@ function calculator(button) {
     data.formula.push(button.formula); // add the operator formula to the array
 
   } else if (button.type == "number") {
-
-    
     data.operation.push(button.symbol);
     data.formula.push(button.formula);
 
@@ -245,54 +245,41 @@ function calculator(button) {
     } else if (button.name == "delete") {
       data.operation.pop(); // remove the last element from operation array
       data.formula.pop(); // remove the last element from formula array
-    } else if (button.name == "close_parentheses") {
+    } else if (button.name == "close_parenthesis") {
       data.operation.push(button.symbol);
       data.formula.push(button.formula);
-    } else if (button.name == "open_parentheses") {
+    } else if (button.name == "open_parenthesis") {
       data.operation.push(button.symbol);
       data.formula.push(button.formula);
     }
 
   } else if (button.type == "calculate") {
-    formula_str = data.formula.join('');
+    formulaStr = data.formula.join('');
 
     console.log(data.operation);
     console.log(data.formula);
 
-    // fix power and factorial base problems
-    let POWER_SEARCH_RESULT = search(data.formula, power);
-    let FACTORIAL_SEARCH_RESULT = search(data.formula, factorial);
+    // fix factorial problems
+    let factorialSearch = search(data.formula, FACTORIAL);
+    //console.log(data.formula, FACTORIAL_SEARCH_RESULT)
 
-
-    const BASES = powerBaseGetter(data.formula, POWER_SEARCH_RESULT)
-    BASES.forEach(base => {
-      let toReplace = base + "^";
-      let replaceWith = "Math.pow(" + base + ",";
-
-      formula_str = formula_str.replace(toReplace, replaceWith);
-    });
-
-
-    const NUMBERS = factorialNumberGetter(data.formula, FACTORIAL_SEARCH_RESULT);
+    const NUMBERS = factorialNumberGetter(data.formula, factorialSearch);
     NUMBERS.forEach(factorial => {
-      formula_str = formula_str.replace(factorial.toReplace, factorial.replaceWith);
-
+      formulaStr = formulaStr.replace(factorial.toReplace, factorial.replaceWith);
     });
-
-    console.log(formula_str);
     
-    let result = eval(formula_str);
-    /*try{
-      result = eval(formula_str);
+    console.log(formulaStr);
+
+    try{
+      result = eval(formulaStr);
     } catch (error) {
       if (error instanceof SyntaxError) {
         result = "Syntax Error!";
         updateOutputResult(result);
         return;
       }
-    }*/
+    }
 
-    ans = result;
     console.log(result);
     data.operation = [ result ];
     data.formula = [ result ];
@@ -328,26 +315,28 @@ function calculator(button) {
         data.operation.push(symbol);
         data.formula.push(formula);
       }
+
   }
   updateOutputResult(data.operation.join(""));
 }
 
 // update output operation
 function updateOutputOperation(operation) {
-  output_operation_element.innerHTML = operation;
+  outputOperationValue.innerHTML = operation;
 }
 
 // update output result
 function updateOutputResult(result) {
-  output_result_element.innerHTML = result;
+  outputResultValue.innerHTML = result;
 }
 
 
 function factorial(n) {
   var result = 1;
 
-  if (n === 0 || n === 1)
+  if (n === 0 || n === 1) {
     return 1;
+  }
 
   for (var i = n; i >= 1; i--) {
     result = result * i;
@@ -357,126 +346,78 @@ function factorial(n) {
 }
 
 function search(array, keyword) {
-  let search_result = [];
+  let searchResult = [];
+
   array.forEach((element, index) => {
-    if (element == keyword) 
-    {
-      search_result.push(index); // add the index of the element to the array
+    if (element == keyword) {
+      searchResult.push(index); // add the index of the element to the array
     }
   })
-  return search_result; // returns the indices of all elements that match the keyword
+
+  return searchResult; // returns the indices of all elements that match the keyword
 } 
 
-function powerBaseGetter(formula, POWER_SEARCH_RESULT) {
-  let power_bases = [];
 
-  POWER_SEARCH_RESULT.forEach(power_index => {
-  let bases = [];
-  
-  let parentheses_count = 0;
-  let previous_index = power_index-1;
+function factorialNumberGetter(formula, factorialSearch) {
+  let numbers = []; // save all the numbers 
 
-  while(previous_index >= 0) {
-    if (formula[previous_index] == "(") {
-      parentheses_count--;
-    }
-    if (formula[previous_index] == ")") {
-      parentheses_count++;
-    }
+  factorialSearch.forEach(factIndex => {
+    let number = []; // current factorial number
+    let sequence = 0;
 
-    let isOperator = false;
-    OPERATORS.forEach(OPERATOR => {
-      if (formula[previous_index] == OPERATOR) {
-        isOperator = true;
-      }
-    })
+    let nextIndex = factIndex + 1;
+    let nextInput = formula[nextIndex];
 
-    let is_power = formula[previous_index] == POWER;
-
-    if (isOperator && parentheses_count == 0 || is_power) {
-      break;
-    }
-
-    bases.unshift(formula[previous_index]);
-    previous_index--;
-  }
-  power_bases.push(bases.join(''));
-})
-  return power_bases;
-}
-
-function factorialNumberGetter(formula, FACTORIAL_SEARCH_RESULT) {
-  let numbers = [];
-  FACTORIAL_SEARCH_RESULT.forEach(factorial_index => {
-    let number = [];
-    let factorial_sequence = 0;
-
-    let next_index = factorial_index + 1;
-    let next_input = formula[next_index];
-
-    if (next_index == FACTORIAL) 
-    {
-      factorial_sequence++;
+    if (nextInput == FACTORIAL) {
+      sequence++;
       return
     }
 
-    let first_factorial_index = index - factorial_sequence;
+    let firstFactorialIndex = factIndex - sequence;
 
-    let previous_index = first_factorial_index - 1;
-    let parentheses_count = 0;
+    let previousIndex = firstFactorialIndex - 1; // index of the previous number
+    let parenthesisCount = 0;
 
-    while(previous_index >= 0) {
-      if (formula[previous_index] == "(") {
-        parentheses_count--;
+    while(previousIndex >= 0) {
+      if (formula[previousIndex] == "(") {
+        parenthesisCount--;
       }
-      if (formula[previous_index] == ")") {
-        parentheses_count++;
+      if (formula[previousIndex] == ")") {
+        parenthesisCount++;
       }
   
       let isOperator = false;
       OPERATORS.forEach(OPERATOR => {
-        if (formula[previous_index] == OPERATOR) {
+        if (formula[previousIndex] == OPERATOR) {
           isOperator = true;
         }
       })
   
     
-      if (isOperator && parentheses_count == 0) {
+      if (isOperator && parenthesisCount == 0) {
         break;
       }
   
-      bases.unshift(formula[previous_index]);
-      previous_index--;
+      number.unshift(formula[previousIndex]);
+      previousIndex--;
     }
-    let number_str = number.join('');
-    const factorial = "factorial(", close_parentheses = ")";
-    let times = factorial_sequence + 1;
 
-    let toReplace = number_str + FACTORIAL.repeat(times);
-    let replaceWith = factorial.repeat(times) + number_str + close_parentheses.repeat(times);
+    let numberStr = number.join('');
+    const factorial = "factorial(", closeParenthesis = ")";
+    let times = sequence + 1;
+
+    let toReplace = numberStr + FACTORIAL.repeat(times);
+    let replaceWith = factorial.repeat(times) + numberStr + closeParenthesis.repeat(times);
 
     numbers.push({
       toReplace: toReplace,
       replaceWith: replaceWith
     })
 
-    console.log(numbers);
-    factorial_sequence = 0; // reset factorial_sequence
+    sequence = 0; // reset factorial_sequence
   })
 
   return numbers;
-}
-
-function sin(angle) {
-  return Math.sin(angle);
-}
-
-function cos(angle) {
-  return Math.cos(angle);
-}
-
-function tan(angle) {
-  return Math.tan(angle);
 }
 
 function log(number) {
@@ -486,3 +427,4 @@ function log(number) {
 function ln(number) {
   return Math.log(number);
 }
+
